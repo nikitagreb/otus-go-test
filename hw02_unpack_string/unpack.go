@@ -3,7 +3,6 @@ package hw02unpackstring
 import (
 	"errors"
 	"strings"
-	"unicode/utf8"
 )
 
 var ErrInvalidString = errors.New("invalid string")
@@ -17,7 +16,9 @@ type directoryData struct {
 }
 
 func Unpack(inputString string) (string, error) {
-	if !utf8.ValidString(inputString) {
+	directory := initDirectoryData()
+
+	if strings.Contains(inputString, "10") || checkFirstCharNumber(inputString, directory) {
 		return "", ErrInvalidString
 	}
 
@@ -25,7 +26,6 @@ func Unpack(inputString string) (string, error) {
 		return "", nil
 	}
 
-	directory := initDirectoryData()
 	prevSlash := false
 	prevSecondSlash := false
 	prevThirdSlash := false
@@ -136,4 +136,14 @@ func copyRune(runeValue rune, directory directoryData, letters []string) []strin
 	}
 
 	return letters
+}
+
+func checkFirstCharNumber(inputString string, directory directoryData) bool {
+	for runeIndex, runeValue := range inputString {
+		if runeIndex == 0 && isNumber(runeValue, directory) {
+			return true
+		}
+	}
+
+	return false
 }
