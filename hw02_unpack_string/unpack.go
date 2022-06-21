@@ -48,13 +48,11 @@ func Unpack(inputString string) (string, error) {
 		}
 
 		if runeValue == '0' && !checkRune {
-			// удаляем предыдущий
 			letters = letters[:len(letters)-1]
 			checkRune = true
 		}
 
 		if runeValue == '1' {
-			// не записываем в массив
 			continue
 		}
 
