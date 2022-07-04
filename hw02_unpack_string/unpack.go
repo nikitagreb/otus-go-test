@@ -3,6 +3,7 @@ package hw02unpackstring
 import (
 	"errors"
 	"strings"
+	"unicode"
 )
 
 var ErrInvalidString = errors.New("invalid string")
@@ -18,7 +19,7 @@ type directoryData struct {
 func Unpack(inputString string) (string, error) {
 	directory := initDirectoryData()
 
-	if strings.Contains(inputString, "10") || checkFirstCharNumber(inputString, directory) {
+	if strings.Contains(inputString, "10") || checkFirstCharNumber(inputString) {
 		return "", ErrInvalidString
 	}
 
@@ -35,7 +36,7 @@ func Unpack(inputString string) (string, error) {
 
 	for _, runeValue := range inputString {
 		checkRune = false
-		if isNumber(runeValue, directory) && prevLineBreak && !checkRune {
+		if unicode.IsDigit(runeValue) && prevLineBreak && !checkRune {
 			letters = copySlashN(runeValue, directory, letters)
 			checkRune = true
 		}
@@ -56,19 +57,19 @@ func Unpack(inputString string) (string, error) {
 			continue
 		}
 
-		if isNumber(runeValue, directory) && prevSlash && prevSecondSlash && !checkRune {
+		if unicode.IsDigit(runeValue) && prevSlash && prevSecondSlash && !checkRune {
 			letters = letters[:len(letters)-1]
 			letters = copyRune(runeValue, directory, letters)
 			checkRune = true
 		}
 
-		if isNumber(runeValue, directory) && prevSlash && !checkRune {
+		if unicode.IsDigit(runeValue) && prevSlash && !checkRune {
 			letters = letters[:len(letters)-1]
 			letters = append(letters, string(runeValue))
 			checkRune = true
 		}
 
-		if isNumber(runeValue, directory) && !checkRune {
+		if unicode.IsDigit(runeValue) && !checkRune {
 			letters = copyRune(runeValue, directory, letters)
 			checkRune = true
 		}
@@ -107,16 +108,6 @@ func initDirectoryData() directoryData {
 	}
 }
 
-func isNumber(sRune rune, directory directoryData) bool {
-	for iRune := range directory.Numbers {
-		if sRune == iRune {
-			return true
-		}
-	}
-
-	return false
-}
-
 func copySlashN(runeValue rune, directory directoryData, letters []string) []string {
 	var i int8 = 2
 	for ; i <= directory.Numbers[runeValue]; i++ {
@@ -136,9 +127,9 @@ func copyRune(runeValue rune, directory directoryData, letters []string) []strin
 	return letters
 }
 
-func checkFirstCharNumber(inputString string, directory directoryData) bool {
+func checkFirstCharNumber(inputString string) bool {
 	for runeIndex, runeValue := range inputString {
-		if runeIndex == 0 && isNumber(runeValue, directory) {
+		if runeIndex == 0 && unicode.IsDigit(runeValue) {
 			return true
 		}
 	}
