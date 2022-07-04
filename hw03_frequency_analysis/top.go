@@ -1,9 +1,14 @@
 package hw03frequencyanalysis
 
 import (
+	"regexp"
 	"sort"
 	"strings"
 )
+
+var re = regexp.MustCompile(`[\s";.,!']+`)
+
+const maxOutputLen int = 10
 
 func Top10(inputString string) []string {
 	topStrings := make([]string, 0)
@@ -12,16 +17,15 @@ func Top10(inputString string) []string {
 		return topStrings
 	}
 
-	strInputSlice := strings.Fields(inputString)
+	strInputSlice := re.Split(inputString, -1)
 	wordCounts := make(map[string]int)
 
 	for _, word := range strInputSlice {
-		_, ok := wordCounts[word]
-		if !ok {
-			wordCounts[word] = 1
-		} else {
-			wordCounts[word]++
+		w := strings.ToLower(word)
+		if word == "-" {
+			continue
 		}
+		wordCounts[w]++
 	}
 
 	outPutStr := make([]struct {
@@ -41,21 +45,31 @@ func Top10(inputString string) []string {
 	})
 
 	tmpStrings := make([]string, 0)
-	tmpStrings = append(tmpStrings, outPutStr[0].Word)
+	lenOutPut := len(outPutStr)
 
-	for i := 1; i < 10; i++ {
-		if outPutStr[i-1].Count != outPutStr[i].Count {
+	for i := 0; i < lenOutPut; i++ {
+		if i != 0 && outPutStr[i-1].Count != outPutStr[i].Count {
 			sort.Strings(tmpStrings)
 			topStrings = append(topStrings, tmpStrings...)
+
+			if i > maxOutputLen {
+				break
+			}
+
 			tmpStrings = make([]string, 0)
 		}
+
 		tmpStrings = append(tmpStrings, outPutStr[i].Word)
 
-		if i == 9 {
+		if i == lenOutPut-1 {
 			sort.Strings(tmpStrings)
 			topStrings = append(topStrings, tmpStrings...)
 		}
 	}
 
-	return topStrings
+	if lenOutPut < maxOutputLen {
+		return topStrings[0:lenOutPut]
+	}
+
+	return topStrings[0:maxOutputLen]
 }
