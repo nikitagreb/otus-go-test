@@ -50,7 +50,39 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c := NewCache(10)
+		for i := 0; i < 10; i++ {
+			key := strconv.Itoa(i)
+			c.Set(Key(key), i*100)
+		}
+
+		for i := 0; i < 10; i++ {
+			for j := 0; j < i; j++ {
+				key := strconv.Itoa(i)
+				c.Get(Key(key))
+			}
+		}
+
+		c.Set("10", 10)
+
+		_, has := c.Get("0")
+		require.False(t, has)
+	})
+
+	t.Run("clear", func(t *testing.T) {
+		c := NewCache(10)
+		for i := 0; i < 10; i++ {
+			key := strconv.Itoa(i)
+			c.Set(Key(key), i*100)
+		}
+
+		c.Clear()
+
+		for i := 0; i < 10; i++ {
+			key := strconv.Itoa(i)
+			_, has := c.Get(Key(key))
+			require.False(t, has)
+		}
 	})
 }
 
