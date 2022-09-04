@@ -6,12 +6,22 @@ import (
 	"sync"
 )
 
-var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
+var (
+	ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
+	ErrInvalidWorkers      = errors.New("the number of workers must be greater than zero")
+)
 
 type Task func() error
 
 // Run starts tasks in n goroutines and stops its work when receiving m errors from tasks.
+// maxErrors <= 0 then there is no limit on errors
 func Run(tasks []Task, workers int, maxErrors int) error {
+	if workers <= 0 {
+		return ErrInvalidWorkers
+	}
+	if maxErrors <= 0 {
+		maxErrors = len(tasks) + 1
+	}
 	taskCh := make(chan Task, len(tasks))
 
 	ctx, cancel := context.WithCancel(context.Background())
