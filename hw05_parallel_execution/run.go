@@ -35,7 +35,6 @@ func Run(tasks []Task, workers int, maxErrors int) error {
 
 		go func() {
 			defer wg.Done()
-
 			for {
 				select {
 				case <-ctx.Done():
@@ -67,12 +66,11 @@ func Run(tasks []Task, workers int, maxErrors int) error {
 			}
 		}()
 	}
-
 	for _, task := range tasks {
 		taskCh <- task
 	}
-	close(taskCh)
 
+	close(taskCh)
 	wg.Wait()
 
 	if maxErrors <= 0 {
