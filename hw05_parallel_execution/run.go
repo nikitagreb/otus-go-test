@@ -1,9 +1,9 @@
 package hw05parallelexecution
 
 import (
-	"context"
 	"errors"
 	"sync"
+	"sync/atomic"
 )
 
 var (
@@ -22,58 +22,34 @@ func Run(tasks []Task, workers int, maxErrors int) error {
 	if maxErrors <= 0 {
 		maxErrors = len(tasks) + 1
 	}
-	taskCh := make(chan Task, len(tasks))
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	var wg sync.WaitGroup
-	var mu sync.Mutex
+	taskChannel := make(chan Task)
+	var errorsCount int32
+	wg := sync.WaitGroup{}
+	wg.Add(workers)
 
 	for i := 0; i < workers; i++ {
-		wg.Add(1)
-
 		go func() {
 			defer wg.Done()
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				default:
-				}
-
-				select {
-				case <-ctx.Done():
-					return
-				case task, ok := <-taskCh:
-					if !ok {
-						cancel()
-						return
-					}
-
-					if task() != nil {
-						mu.Lock()
-						maxErrors--
-						if maxErrors <= 0 {
-							mu.Unlock()
-							cancel()
-							return
-						}
-						mu.Unlock()
-					}
-				default:
+			for task := range taskChannel {
+				err := task()
+				if err != nil {
+					atomic.AddInt32(&errorsCount, 1)
 				}
 			}
 		}()
 	}
+
 	for _, task := range tasks {
-		taskCh <- task
+		if atomic.LoadInt32(&errorsCount) >= int32(maxErrors) {
+			break
+		}
+		taskChannel <- task
 	}
 
-	close(taskCh)
+	close(taskChannel)
 	wg.Wait()
 
-	if maxErrors <= 0 {
+	if errorsCount >= int32(maxErrors) {
 		return ErrErrorsLimitExceeded
 	}
 
