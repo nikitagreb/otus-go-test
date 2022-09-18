@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/schollz/progressbar/v3"
+	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -55,7 +55,7 @@ func Copy(fromPath string, toPath string, offset int64, limit int64) error {
 		limit = total
 	}
 
-	bar := progressbar.Default(limit)
+	bar := pb.StartNew(int(limit))
 
 	for {
 		size := partSize
@@ -71,16 +71,15 @@ func Copy(fromPath string, toPath string, offset int64, limit int64) error {
 			return printErr(err)
 		}
 
-		barErr := bar.Add(int(n))
-		if barErr != nil {
-			return barErr
-		}
+		bar.Add(int(n))
 		limit -= n
 
 		if eof || limit <= 0 {
 			break
 		}
 	}
+
+	bar.Finish()
 
 	return nil
 }
