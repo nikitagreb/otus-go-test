@@ -1,0 +1,7 @@
+goos: darwin
+goarch: amd64
+pkg: github.com/nikitagreb/otus-go-test/hw10_program_optimization
+cpu: Intel(R) Core(TM) i9-9980HK CPU @ 2.40GHz
+BenchmarkGetDomainStat-16    	       8	 144666672 ns/op
+PASS
+ok  	github.com/nikitagreb/otus-go-test/hw10_program_optimization	3.497s
