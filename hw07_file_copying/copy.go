@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/cheggaaa/pb/v3"
+	pb1 "github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -55,7 +55,7 @@ func Copy(fromPath string, toPath string, offset int64, limit int64) error {
 		limit = total
 	}
 
-	bar := pb.StartNew(int(limit))
+	bar := pb1.StartNew(int(limit))
 
 	for {
 		size := partSize
