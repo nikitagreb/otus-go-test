@@ -90,4 +90,62 @@ func TestPipeline(t *testing.T) {
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
+
+	t.Run("without stages", func(t *testing.T) {
+		inChannel := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, value := range data {
+				inChannel <- value
+			}
+			close(inChannel)
+		}()
+
+		result := make([]int, 0, 10)
+		for out := range ExecutePipeline(inChannel, nil) {
+			result = append(result, out.(int))
+		}
+
+		require.Equal(t, data, result)
+	})
+
+	t.Run("without stage - done case", func(t *testing.T) {
+		inChannel := make(Bi)
+		doneChannel := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, value := range data {
+				inChannel <- value
+			}
+			close(doneChannel)
+		}()
+
+		result := make([]int, 0, 10)
+		for out := range ExecutePipeline(inChannel, doneChannel) {
+			result = append(result, out.(int))
+		}
+
+		require.Equal(t, data, result)
+	})
+
+	t.Run("stage is nil", func(t *testing.T) {
+		inChannel := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, value := range data {
+				inChannel <- value
+			}
+			close(inChannel)
+		}()
+
+		result := make([]int, 0, 10)
+		for out := range ExecutePipeline(inChannel, nil, nil) {
+			result = append(result, out.(int))
+		}
+
+		require.Equal(t, data, result)
+	})
 }
